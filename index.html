@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#21152f">
+<title>CPuzzle — A little piece of you</title>
+<style>
+:root{--bg:#171020;--panel:#241a31;--pink:#f4b8d4;--lav:#d9c5ff;--muted:#c5b8ce;--gold:#f5d89a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:#fff;font-family:Georgia,"Times New Roman",serif;background:radial-gradient(ellipse at 15% 10%,#493052 0,transparent 38%),radial-gradient(ellipse at 90% 80%,#382443 0,transparent 35%),var(--bg);padding:26px 15px 42px}
+main{max-width:900px;margin:auto}
+header{text-align:center;margin:10px auto 25px}
+.eyebrow{color:var(--gold);letter-spacing:4px;text-transform:uppercase;font:11px Arial,sans-serif}
+h1{font-size:clamp(36px,8vw,62px);font-weight:400;margin:10px 0;color:var(--pink)}
+.subtitle{color:var(--muted);font-size:17px;line-height:1.5;margin:0 auto;max-width:520px}
+.panel{max-width:640px;margin:0 auto;background:#ffffff0b;border:1px solid #ffffff20;border-radius:24px;padding:clamp(15px,4vw,27px);box-shadow:0 22px 70px #0005;backdrop-filter:blur(12px)}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.stat{font:12px Arial,sans-serif;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.stat strong{display:block;color:#fff;font:20px Georgia,serif;letter-spacing:0;margin-top:4px}
+#board{width:min(100%,540px);aspect-ratio:3/4;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:0;padding:0;background:transparent;border:0;border-radius:0;overflow:hidden;touch-action:pan-y}
+.tile{min-width:0;min-height:0;padding:0;border:0;border-radius:0;background-image:url("precious.jpg");background-repeat:no-repeat;background-size:400% 400%;cursor:grab;position:relative;transition:filter .15s,transform .15s;touch-action:none}
+.tile:focus-visible{outline:3px solid var(--gold);outline-offset:-3px}
+.tile.selected{outline:3px solid var(--gold);outline-offset:-3px;filter:brightness(1.18);transform:scale(.97)}
+.tile.dragging{opacity:.45}
+.tile.over{outline:3px dashed var(--pink);outline-offset:-3px}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
+button{border:0;border-radius:999px;padding:12px 19px;font: bold 13px Arial,sans-serif;letter-spacing:.3px;cursor:pointer;transition:transform .15s,opacity .15s}
+button:hover{transform:translateY(-2px)}
+.primary{background:linear-gradient(120deg,var(--pink),var(--lav));color:#26182d}
+.secondary{background:#ffffff12;color:#fff;border:1px solid #ffffff35}
+.help{text-align:center;color:var(--muted);font:12px/1.5 Arial,sans-serif;margin:12px auto 0;max-width:470px}
+#preview{display:none;width:min(100%,240px);aspect-ratio:3/4;object-fit:cover;border-radius:12px;margin:15px auto 0;border:1px solid #ffffff55}
+#win{display:none;text-align:center;margin:22px auto 4px;padding:22px 16px;border-radius:18px;background:linear-gradient(135deg,#f4b8d41c,#d9c5ff1c);border:1px solid #f4b8d455}
+#win h2{font-size:30px;color:var(--pink);font-weight:400;margin:0 0 8px}
+#win p{color:#eee0f3;line-height:1.6;margin:0 auto 15px;max-width:440px}
+
+#celebration{display:none;position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at center,#382047f2,#100817f7);overflow:hidden;align-items:center;justify-content:center;text-align:center;padding:24px}
+#celebration.show{display:flex;animation:celebrateIn .7s ease both}
+#fireworks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.celebration-message{position:relative;z-index:2;max-width:1000px;animation:messagePop 1s cubic-bezier(.2,.8,.2,1) both}
+.celebration-message h2{font:900 clamp(42px,10vw,108px)/.98 Arial,sans-serif;letter-spacing:clamp(1px,1vw,8px);margin:0;color:#fff;text-shadow:0 0 12px #ffb5dc,0 0 32px #d77cff,0 5px 24px #0009}
+.celebration-message p{font:clamp(18px,3vw,28px) Georgia,serif;color:#ffe0f0;margin:22px 0 26px;text-shadow:0 2px 12px #000}
+.celebration-message button{font-size:15px}
+@keyframes celebrateIn{from{opacity:0}to{opacity:1}}
+@keyframes messagePop{from{opacity:0;transform:scale(.65) translateY(25px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+footer{text-align:center;color:#9e8fa9;font:11px Arial,sans-serif;margin-top:23px;letter-spacing:1px}
+@media(max-width:480px){body{padding:16px 10px 30px}.panel{padding:12px}.topline{margin-bottom:10px}#board{gap:0;padding:0}.subtitle{font-size:15px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">A birthday surprise</div>
+  <h1>CPuzzle</h1>
+  <p class="subtitle">A little piece of you, a little piece of happiness.<br>Put the picture back together, Precious. ♡</p>
+</header>
+
+<section class="panel" aria-label="Photo puzzle">
+  <div class="topline">
+    <div class="stat">Moves<strong id="moves">0</strong></div>
+    <div class="stat">Time<strong id="timer">00:00</strong></div>
+    <div class="stat">Pieces<strong>16</strong></div>
+  </div>
+  <div id="board" aria-label="Sixteen-piece photo puzzle"></div>
+  <img id="preview" src="precious.jpg" alt="Completed photo preview">
+  <div class="controls">
+    <button class="primary" id="shuffle">Shuffle puzzle</button>
+    <button class="secondary" id="peek">Peek at photo</button>
+    <button class="secondary" id="reset">Start over</button>
+  </div>
+  <p class="help">Tap one piece, then another to swap their positions. Complete the picture to reveal your birthday message.</p>
+  <div id="win">
+    <h2>Every piece is beautiful. ♡</h2>
+    <p>Happy Birthday, Precious! I hope your day is as beautiful and special as you are. You deserve all the love, happiness and little moments that make life wonderful. With love, always. ♡</p>
+    <button class="primary" id="again">Play again</button>
+  </div>
+</section>
+<footer>MADE WITH LOVE · JUST FOR PRECIOUS</footer>
+</main>
+<div id="celebration" role="dialog" aria-modal="true" aria-label="Birthday celebration">
+  <canvas id="fireworks"></canvas>
+  <div class="celebration-message">
+    <h2>HAPPY BIRTHDAY<br>PRECIOUS!</h2>
+    <p>Today is all about you. May your day sparkle as brightly as you do. ♡</p>
+    <button class="primary" id="celebrateClose">Continue</button>
+  </div>
+</div>
+<script>
+const board=document.getElementById('board');
+const movesEl=document.getElementById('moves');
+const timerEl=document.getElementById('timer');
+const win=document.getElementById('win');
+const preview=document.getElementById('preview');
+const celebration=document.getElementById('celebration');
+let fireworksFrame=null;
+let celebrationTimeout=null;
+let order=[],moves=0,seconds=0,clock=null,started=false,selected=null,dragIndex=null;
+const total=16;
+
+function solved(){return order.every((v,i)=>v===i)}
+function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function startClock(){if(started)return;started=true;clock=setInterval(()=>{seconds++;timerEl.textContent=formatTime(seconds)},1000)}
+function stopClock(){clearInterval(clock);clock=null}
+function resetStats(){stopClock();clearTimeout(celebrationTimeout);celebrationTimeout=null;started=false;seconds=0;moves=0;selected=null;movesEl.textContent='0';timerEl.textContent='00:00';win.style.display='none';preview.style.display='none';closeCelebration()}
+function render(){
+  board.innerHTML='';
+  order.forEach((piece,index)=>{
+    const tile=document.createElement('button');
+    tile.type='button';tile.className='tile';tile.setAttribute('aria-label','Puzzle piece '+(piece+1));
+    const row=Math.floor(piece/4),col=piece%4;
+    tile.style.backgroundPosition=(col/3*100)+'% '+(row/3*100)+'%';
+    tile.dataset.index=index;
+    if(selected===index)tile.classList.add('selected');
+    tile.addEventListener('click',()=>choose(index));
+    tile.addEventListener('pointerdown',()=>{dragIndex=index;tile.classList.add('dragging')});
+    tile.addEventListener('pointerup',()=>tile.classList.remove('dragging'));
+    tile.addEventListener('pointercancel',()=>tile.classList.remove('dragging'));
+    tile.addEventListener('pointerenter',()=>{if(dragIndex!==null&&dragIndex!==index)tile.classList.add('over')});
+    tile.addEventListener('pointerleave',()=>tile.classList.remove('over'));
+    tile.addEventListener('pointermove',e=>{if(dragIndex!==null&&e.buttons===1){tile.classList.add('over')}});
+    tile.addEventListener('pointerup',()=>{if(dragIndex!==null&&dragIndex!==index){swap(dragIndex,index)}dragIndex=null});
+    board.appendChild(tile);
+  });
+}
+function choose(index){
+  startClock();
+  if(selected===null){selected=index;render();return}
+  if(selected===index){selected=null;render();return}
+  swap(selected,index);selected=null;
+}
+function swap(a,b){
+  [order[a],order[b]]=[order[b],order[a]];
+  moves++;movesEl.textContent=moves;render();checkWin();
+}
+function checkWin(){
+  if(solved()){stopClock();win.style.display='block';preview.style.display='block';celebrationTimeout=setTimeout(()=>{showCelebration();},2000);}
+}
+function showCelebration(){
+  celebration.classList.add('show');
+  startFireworks();
+}
+function closeCelebration(){
+  celebration.classList.remove('show');
+  stopFireworks();
+}
+document.getElementById('celebrateClose').addEventListener('click',closeCelebration);
+function startFireworks(){
+  const canvas=document.getElementById('fireworks'),ctx=canvas.getContext('2d');
+  let particles=[],running=true,lastBurst=0;
+  const resize=()=>{canvas.width=window.innerWidth*devicePixelRatio;canvas.height=window.innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)};
+  resize();window.addEventListener('resize',resize);
+  function burst(x,y){
+    const hue=Math.floor(Math.random()*360),count=75;
+    for(let i=0;i<count;i++){const angle=Math.PI*2*i/count,speed=1.5+Math.random()*5;particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:55+Math.random()*35,max:90,hue,size:1.5+Math.random()*2.5})}
+  }
+  function frame(now){
+    if(!running)return;
+    const w=window.innerWidth,h=window.innerHeight;
+    ctx.clearRect(0,0,w,h);
+    if(now-lastBurst>520){burst(w*(.12+Math.random()*.76),h*(.12+Math.random()*.55));lastBurst=now}
+    particles=particles.filter(p=>p.life>0);
+    for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.035;p.vx*=.99;p.vy*=.99;p.life--;ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=`hsl(${p.hue} 100% 70%)`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill()}
+    ctx.globalAlpha=1;fireworksFrame=requestAnimationFrame(frame);
+  }
+  fireworksFrame=requestAnimationFrame(frame);
+  stopFireworks=()=>{running=false;cancelAnimationFrame(fireworksFrame);window.removeEventListener('resize',resize);ctx.clearRect(0,0,canvas.width,canvas.height)};
+}
+let stopFireworks=()=>{};
+function shuffle(){
+  resetStats();order=Array.from({length:total},(_,i)=>i);
+  do{for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}}while(solved());
+  render();
+}
+document.getElementById('shuffle').addEventListener('click',shuffle);
+document.getElementById('reset').addEventListener('click',shuffle);
+document.getElementById('again').addEventListener('click',shuffle);
+document.getElementById('peek').addEventListener('click',()=>{
+  const showing=preview.style.display==='block';
+  preview.style.display=showing?'none':'block';
+  document.getElementById('peek').textContent=showing?'Peek at photo':'Hide photo';
+});
+shuffle();
+</script>
+</body>
+</html>
